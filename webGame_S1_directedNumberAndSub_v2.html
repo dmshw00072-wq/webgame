@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數學大冒險：有向數與代數王國</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,700;1,500;1,700&family=Noto+Sans+TC:wght@400;600;800&family=Times+New+Roman:ital@1&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .font-math {
+            font-family: 'Chakra Petch', 'Noto Sans TC', sans-serif;
+        }
+
+        /* Glassmorphism Effect */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.78);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        /* Animation Keyframes */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-pop {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Particle Canvas Overlay */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen relative select-none">
+
+    <!-- Particle Canvas for Celebrations -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Header / Navbar -->
+    <header class="w-full max-w-5xl mx-auto p-4 flex justify-between items-center z-10">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-black text-xl shadow-lg">
+                🧮
+            </div>
+            <div>
+                <h1 class="text-xl sm:text-2xl font-black tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-pink-300 to-yellow-200">
+                    數學大冒險
+                </h1>
+                <p class="text-xs text-slate-400 font-medium">有向數與代數王國</p>
+            </div>
+        </div>
+
+        <!-- Audio Control & Mode Badge -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+            <button id="sound-btn" class="glass-panel p-2.5 rounded-xl hover:bg-slate-700/50 transition-all text-sm flex items-center space-x-1 border border-slate-600/50 cursor-pointer">
+                <span id="sound-icon">🔊</span>
+            </button>
+            <button id="mode-badge" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-300 border border-indigo-500/30">
+                闖關模式
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="flex-grow flex items-center justify-center p-3 sm:p-6 z-10">
+        <div class="w-full max-w-3xl">
+
+            <!-- START MENU SCREEN -->
+            <div id="start-screen" class="glass-panel rounded-3xl p-6 sm:p-10 text-center shadow-2xl relative overflow-hidden animate-pop">
+                <div class="absolute -top-12 -right-12 w-40 h-40 bg-pink-500/10 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl"></div>
+
+                <div class="inline-block px-4 py-1.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold mb-4 border border-indigo-500/30">
+                    國中/初中數學觀念突破
+                </div>
+
+                <h2 class="text-3xl sm:text-5xl font-black mb-4 leading-tight">
+                    挑戰正負號陷阱！<br>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-pink-400 to-indigo-300">
+                        成為代數運算大師
+                    </span>
+                </h2>
+
+                <p class="text-slate-300 text-sm sm:text-base max-w-lg mx-auto mb-8 leading-relaxed">
+                    遊戲分為兩個階段：<br>
+                    <span class="text-indigo-300 font-semibold">第一階段：有向數四則運算 (10題)</span>（括號乘法與直式分數）<br>
+                    <span class="text-pink-300 font-semibold">第二階段：代數式代入求值 (15題)</span>（由淺入深 15 級漸進）
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl mx-auto mb-8">
+                    <button onclick="startGame('campaign')" class="p-4 rounded-2xl bg-gradient-to-b from-indigo-600 to-indigo-800 hover:from-indigo-500 hover:to-indigo-700 transition-all transform hover:-translate-y-1 shadow-lg shadow-indigo-900/50 border border-indigo-400/30 group cursor-pointer">
+                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🏆</div>
+                        <div class="font-bold text-white text-base">完整闖關模式</div>
+                        <div class="text-xs text-indigo-200 mt-1">10題 ➔ 15題 挑戰</div>
+                    </button>
+
+                    <button onclick="startGame('p1')" class="p-4 rounded-2xl glass-panel hover:bg-slate-700/60 transition-all transform hover:-translate-y-1 border border-slate-600/50 group cursor-pointer">
+                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">➕</div>
+                        <div class="font-bold text-slate-200 text-base">階段一專練</div>
+                        <div class="text-xs text-slate-400 mt-1">有向數四則 (10題)</div>
+                    </button>
+
+                    <button onclick="startGame('p2')" class="p-4 rounded-2xl glass-panel hover:bg-slate-700/60 transition-all transform hover:-translate-y-1 border border-slate-600/50 group cursor-pointer">
+                        <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🔤</div>
+                        <div class="font-bold text-slate-200 text-base">階段二專練</div>
+                        <div class="text-xs text-slate-400 mt-1">代數式代入 (15題)</div>
+                    </button>
+                </div>
+
+                <div class="text-xs text-slate-400 flex items-center justify-center space-x-4">
+                    <span>⚡ 斜體變數標準表示</span>
+                    <span>•</span>
+                    <span>🎯 15級難度遞進</span>
+                    <span>•</span>
+                    <span>🔥 連擊加分機制</span>
+                </div>
+            </div>
+
+            <!-- GAMEPLAY SCREEN -->
+            <div id="game-screen" class="hidden space-y-4">
+
+                <!-- Top Stats Dashboard -->
+                <div class="glass-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 border border-slate-700/60">
+                    <!-- Stage Info -->
+                    <div class="flex items-center space-x-2">
+                        <span id="stage-badge" class="px-3 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/40">
+                            階段 1/2
+                        </span>
+                        <span id="stage-title" class="text-sm font-bold text-slate-200">
+                            有向數四則運算
+                        </span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div id="progress-container" class="flex-1 max-w-xs mx-2">
+                        <div class="flex justify-between text-xs text-slate-400 mb-1">
+                            <span>階段進度</span>
+                            <span id="progress-text" class="font-bold text-indigo-300">0 / 10</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                            <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Score & Combo -->
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right">
+                            <div class="text-xs text-slate-400">總得分</div>
+                            <div id="score-val" class="font-math font-bold text-xl text-yellow-400">0</div>
+                        </div>
+                        <div class="text-right min-w-[60px]">
+                            <div class="text-xs text-slate-400">連擊</div>
+                            <div id="combo-val" class="font-math font-bold text-xl text-pink-400">0x</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Question Card -->
+                <div id="question-card" class="glass-panel rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden border border-slate-700/80">
+                    
+                    <!-- Question Title / Subtitle -->
+                    <div class="flex justify-between items-center mb-6">
+                        <span id="question-number" class="text-xs font-bold text-slate-400 tracking-wider uppercase">
+                            QUESTION #1
+                        </span>
+                        <span id="timer-display" class="font-math text-sm font-semibold text-emerald-400 bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-500/30">
+                            ⏱️ 00:00
+                        </span>
+                    </div>
+
+                    <!-- Given Condition (For Phase 2 e.g. "若 a = -3, b = 4") -->
+                    <div id="question-condition" class="hidden mb-3 text-base sm:text-lg text-indigo-300 font-medium bg-indigo-950/30 py-2 px-4 rounded-xl inline-block border border-indigo-500/20">
+                        --
+                    </div>
+
+                    <!-- Expression To Compute -->
+                    <div class="my-4 sm:my-6">
+                        <div class="text-xs text-slate-400 mb-2" id="expression-label">計算下列算式的值：</div>
+                        <div id="question-math" class="font-math text-2xl sm:text-4xl font-bold text-white tracking-wide leading-relaxed py-2 min-h-[70px] flex items-center justify-center">
+                            --
+                        </div>
+                    </div>
+
+                    <!-- Multiple Choice Options Grid -->
+                    <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-8">
+                        <!-- Option buttons generated dynamically -->
+                    </div>
+
+                    <!-- Immediate Explanation Box (Appears after answering) -->
+                    <div id="explanation-box" class="hidden mt-6 text-left p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-indigo-500/30 animate-pop">
+                        <div class="flex items-center justify-between mb-2">
+                            <div id="result-status" class="font-bold text-base flex items-center space-x-2">
+                                <!-- Status icon & text -->
+                            </div>
+                            <button id="next-btn" onclick="nextQuestion()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white font-bold text-sm shadow-lg transform active:scale-95 transition-all cursor-pointer">
+                                下一題 ➔
+                            </button>
+                        </div>
+                        <div class="text-xs font-semibold text-indigo-300 uppercase tracking-wider mb-1">💡 觀念步驟解析</div>
+                        <div id="explanation-content" class="text-sm text-slate-300 space-y-1.5 leading-relaxed font-math">
+                            <!-- Explanation text -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- STAGE TRANSITION MODAL -->
+            <div id="stage-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+                <div class="glass-panel rounded-3xl p-8 max-w-md w-full text-center border border-indigo-500/50 shadow-2xl animate-pop relative">
+                    <div class="text-6xl mb-4 animate-bounce">🎉</div>
+                    <h3 class="text-2xl font-black text-white mb-2">第一階段 通關成功！</h3>
+                    <p class="text-slate-300 text-sm mb-6 leading-relaxed">
+                        太棒了！你已順利完成 10 題<span class="text-indigo-300 font-bold">【有向數四則運算】</span>！<br>
+                        接下來進入第二階段：<span class="text-pink-300 font-bold">【代數式的代入與計算 (15題)】</span>，難度將由淺入深漸進挑戰！
+                    </p>
+                    <button onclick="startPhase2()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 font-bold text-white shadow-xl transform hover:scale-105 transition-all cursor-pointer">
+                        進入第二階段 (共15題) 🚀
+                    </button>
+                </div>
+            </div>
+
+            <!-- GAME OVER / RESULTS SCREEN -->
+            <div id="result-screen" class="hidden glass-panel rounded-3xl p-6 sm:p-10 text-center shadow-2xl relative overflow-hidden animate-pop">
+                <div class="text-5xl mb-3" id="result-emoji">🏆</div>
+                <h2 class="text-3xl font-black mb-1 text-white" id="result-title">冒險完成！</h2>
+                <p class="text-slate-400 text-sm mb-6" id="result-subtitle">你成功完成了所有挑戰</p>
+
+                <!-- Rating Stars -->
+                <div id="result-stars" class="text-3xl space-x-1 mb-6">
+                    ⭐⭐⭐
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+                    <div class="p-3 rounded-2xl bg-slate-800/60 border border-slate-700">
+                        <div class="text-xs text-slate-400 mb-0.5">總得分</div>
+                        <div id="res-score" class="font-math font-bold text-xl text-yellow-400">0</div>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-800/60 border border-slate-700">
+                        <div class="text-xs text-slate-400">答對率</div>
+                        <div id="res-accuracy" class="font-math font-bold text-xl text-emerald-400">0%</div>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-800/60 border border-slate-700">
+                        <div class="text-xs text-slate-400">最高連擊</div>
+                        <div id="res-maxcombo" class="font-math font-bold text-xl text-pink-400">0x</div>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-800/60 border border-slate-700">
+                        <div class="text-xs text-slate-400">總耗時</div>
+                        <div id="res-time" class="font-math font-bold text-xl text-indigo-300">0s</div>
+                    </div>
+                </div>
+
+                <!-- Title Rank Badge -->
+                <div class="mb-8 p-4 rounded-2xl bg-gradient-to-r from-indigo-900/40 via-purple-900/40 to-pink-900/40 border border-indigo-500/30 inline-block w-full max-w-sm">
+                    <div class="text-xs text-slate-400 mb-1">獲得稱號</div>
+                    <div id="res-rank-title" class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-pink-300">
+                        代數傳奇大師
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="startGame(gameMode)" class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 font-bold text-white shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer">
+                        🔄 重新挑戰
+                    </button>
+                    <button onclick="showStartScreen()" class="px-6 py-3.5 rounded-2xl glass-panel hover:bg-slate-700/60 font-bold text-slate-200 border border-slate-600 transition-all cursor-pointer">
+                        🏠 返回主選單
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-4 text-xs text-slate-500 z-10">
+        國中數學互動教學遊戲 • 有向數四則運算與代數求值
+    </footer>
+
+    <script>
+        /* ==========================================================================
+           1. WEB AUDIO API SYNTHESIZER (Sound Effects)
+           ========================================================================== */
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.35);
+
+                createParticles(window.innerWidth / 2, window.innerHeight / 2, 25, ['#4ade80', '#38bdf8', '#facc15']);
+            } 
+            else if (type === 'wrong') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(160, now);
+                osc.frequency.setValueAtTime(110, now + 0.15);
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } 
+            else if (type === 'levelup') {
+                [261.63, 329.63, 392.00, 523.25, 659.25, 783.99].forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.12, now + idx * 0.07);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.07);
+                    osc.stop(now + idx * 0.07 + 0.25);
+                });
+                createParticles(window.innerWidth / 2, window.innerHeight / 2, 70, ['#ec4899', '#818cf8', '#facc15', '#34d399']);
+            }
+            else if (type === 'click') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            }
+        }
+
+        document.getElementById('sound-btn').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-icon').innerText = soundEnabled ? '🔊' : '🔇';
+        });
+
+        /* ==========================================================================
+           2. PARTICLE SYSTEM ENGINE (Canvas Effects)
+           ========================================================================== */
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function createParticles(x, y, count, colors) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 8 + 2;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 1,
+                    radius: Math.random() * 4 + 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    alpha: 1,
+                    decay: Math.random() * 0.02 + 0.015
+                });
+            }
+        }
+
+        function updateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.15;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+            requestAnimationFrame(updateParticles);
+        }
+        updateParticles();
+
+        /* ==========================================================================
+           3. HELPER & FORMATTING FUNCTIONS
+           ========================================================================== */
+
+        // Format variable into standard HTML Italic font (<i class="font-serif italic">a</i>)
+        function v(name) {
+            return `<i class="font-serif italic font-normal px-0.5 text-pink-300">${name}</i>`;
+        }
+
+        // Random integer in [min, max], option to disallow zero
+        function randInt(min, max, allowZero = true) {
+            let num = 0;
+            do {
+                num = Math.floor(Math.random() * (max - min + 1)) + min;
+            } while (!allowZero && num === 0);
+            return num;
+        }
+
+        // Format Signed Integer e.g. (+5) or (-3)
+        function fmtSigned(n, alwaysShowPlus = true) {
+            if (n === 0) return '0';
+            if (n > 0) return alwaysShowPlus ? `(+${n})` : `${n}`;
+            return `(${n})`;
+        }
+
+        // Format Vertical Fraction in HTML/Tailwind
+        function fmtFraction(numHtml, denHtml) {
+            return `<span class="inline-flex flex-col items-center justify-center align-middle mx-1 my-[-0.3rem]">
+                <span class="border-b-2 border-slate-200 px-2 pb-0.5 text-center leading-tight">${numHtml}</span>
+                <span class="px-2 pt-0.5 text-center leading-tight">${denHtml}</span>
+            </span>`;
+        }
+
+        // Build 4 unique option choices
+        function buildUniqueOptions(correctVal, distractorFuncs) {
+            const opts = new Set([correctVal]);
+            
+            for (let fn of distractorFuncs) {
+                if (opts.size >= 4) break;
+                try {
+                    let d = fn();
+                    if (Number.isInteger(d) && !isNaN(d)) {
+                        opts.add(d);
+                    }
+                } catch(e){}
+            }
+
+            const offsets = [-1, 1, -2, 2, -10, 10, -5, 5];
+            let idx = 0;
+            while (opts.size < 4) {
+                let off = offsets[idx % offsets.length];
+                let fallback = correctVal + off;
+                opts.add(fallback);
+                idx++;
+            }
+
+            const arr = Array.from(opts).slice(0, 4);
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        /* ==========================================================================
+           4. PHASE 1 GENERATOR: 有向數四則運算 (無乘號 ×, 直式分數與除號)
+           ========================================================================== */
+        function generatePhase1Problem() {
+            const type = randInt(1, 4);
+
+            if (type === 1) {
+                // Type 1: Addition / Subtraction e.g., (-8) - (+15)
+                const a = randInt(-15, 15, false);
+                const b = randInt(-15, 15, false);
+                const isAdd = Math.random() > 0.5;
+                const op = isAdd ? '+' : '-';
+                const ans = isAdd ? (a + b) : (a - b);
+
+                const mathStr = `${fmtSigned(a)} ${op} ${fmtSigned(b)}`;
+                
+                const distractors = [
+                    () => isAdd ? (a - b) : (a + b),
+                    () => isAdd ? (-a + b) : (-a - b),
+                    () => -ans
+                ];
+
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：去括號並注意正負號化簡。`,
+                    `算式：<span class="text-indigo-300">${mathStr}</span>`,
+                    isAdd 
+                        ? `同號得正、異號得負 ➔ <span class="text-yellow-300">${a} ${b > 0 ? '+ ' + b : '- ' + Math.abs(b)}</span>` 
+                        : `減去一個數等於加上其相反數 ➔ <span class="text-yellow-300">${a} ${b > 0 ? '- ' + b : '+ ' + Math.abs(b)}</span>`,
+                    `正確計算結果為：<span class="text-emerald-400 font-bold">${ans}</span>`
+                ];
+
+                return { condition: null, expression: mathStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (type === 2) {
+                // Type 2: Multiplication WITHOUT '×' symbol, using adjacent parentheses e.g. (-4)(-6)
+                const a = randInt(-12, 12, false);
+                const b = randInt(-12, 12, false);
+                const ans = a * b;
+                const mathStr = `${fmtSigned(a)}${fmtSigned(b)}`;
+
+                const distractors = [
+                    () => -(a * b),
+                    () => a + b,
+                    () => -(a + b)
+                ];
+
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `⚠️ <span class="text-yellow-300">表示法提醒：</span>括號緊鄰如 <span class="text-indigo-300">(-4)(-6)</span> 即代表相乘。`,
+                    `法則：<span class="text-pink-300">同號相乘得正，異號相乘得負</span>。`,
+                    `數字部分：${Math.abs(a)} × ${Math.abs(b)} = ${Math.abs(ans)}`,
+                    `符號部分：${(a > 0 && b > 0) || (a < 0 && b < 0) ? '同號得「正 (+)」' : '異號得「負 (-)」'}`,
+                    `最終結果為：<span class="text-emerald-400 font-bold">${ans}</span>`
+                ];
+
+                return { condition: null, expression: mathStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (type === 3) {
+                // Type 3: Division (50% ÷ symbol, 50% vertical fraction)
+                const b = randInt(-9, 9, false);
+                const ans = randInt(-10, 10, false);
+                const a = b * ans;
+                const isFraction = Math.random() > 0.5;
+
+                let mathStr = isFraction 
+                    ? fmtFraction(fmtSigned(a), fmtSigned(b))
+                    : `${fmtSigned(a)} ÷ ${fmtSigned(b)}`;
+
+                const distractors = [
+                    () => -ans,
+                    () => a - b,
+                    () => a + b
+                ];
+
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：進行有向數除法${isFraction ? '（分數形式即分子除以分母）' : ''}。`,
+                    `法則：<span class="text-pink-300">同號相除得正，異號相除得負</span>。`,
+                    `數字部分：${Math.abs(a)} ÷ ${Math.abs(b)} = ${Math.abs(ans)}`,
+                    `符號部分：${(a > 0 && b > 0) || (a < 0 && b < 0) ? '同號得「正 (+)」' : '異號得「負 (-)」'}`,
+                    `最終結果為：<span class="text-emerald-400 font-bold">${ans}</span>`
+                ];
+
+                return { condition: null, expression: mathStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else {
+                // Type 4: Mixed Operations (No乘號, Division mix) e.g., (-2)(+8) + (-5) or (+20)/(-4) - (-6)
+                const useFraction = Math.random() > 0.5;
+                if (useFraction) {
+                    const b = randInt(-6, 6, false);
+                    const q = randInt(-8, 8, false);
+                    const a = b * q;
+                    const c = randInt(-10, 10, false);
+                    const ans = q + c;
+
+                    const mathStr = `${fmtFraction(fmtSigned(a), fmtSigned(b))} + ${fmtSigned(c)}`;
+                    const distractors = [
+                        () => -q + c,
+                        () => q - c,
+                        () => -ans
+                    ];
+                    const options = buildUniqueOptions(ans, distractors);
+                    const exp = [
+                        `步驟 1：先算分數除法：<span class="text-indigo-300">${fmtSigned(a)} ÷ ${fmtSigned(b)} = ${q}</span>`,
+                        `步驟 2：再進行後續加法：<span class="text-yellow-300">${q} + ${fmtSigned(c)} = ${ans}</span>`,
+                        `正確結果為：<span class="text-emerald-400 font-bold">${ans}</span>`
+                    ];
+                    return { condition: null, expression: mathStr, answer: ans, options, explanation: exp.join('<br>') };
+                } else {
+                    const a = randInt(-8, 8, false);
+                    const b = randInt(-6, 6, false);
+                    const c = randInt(-10, 10, false);
+                    const prod = a * b;
+                    const ans = prod + c;
+
+                    const mathStr = `${fmtSigned(a)}${fmtSigned(b)} + ${fmtSigned(c)}`;
+                    const distractors = [
+                        () => -prod + c,
+                        () => prod - c,
+                        () => -ans
+                    ];
+                    const options = buildUniqueOptions(ans, distractors);
+                    const exp = [
+                        `步驟 1：括號緊鄰先做乘法：<span class="text-indigo-300">${fmtSigned(a)}${fmtSigned(b)} = ${prod}</span>`,
+                        `步驟 2：再進行加法：<span class="text-yellow-300">${prod} + ${fmtSigned(c)} = ${ans}</span>`,
+                        `正確結果為：<span class="text-emerald-400 font-bold">${ans}</span>`
+                    ];
+                    return { condition: null, expression: mathStr, answer: ans, options, explanation: exp.join('<br>') };
+                }
+            }
+        }
+
+        /* ==========================================================================
+           5. PHASE 2 GENERATOR: 代數式代入 (15級由淺入深難度遞進 + 斜體變數)
+           ========================================================================== */
+        function generatePhase2Problem(levelStep) {
+            // levelStep goes from 1 to 15
+            const step = Math.min(Math.max(levelStep, 1), 15);
+
+            if (step === 1) {
+                // Q1: Basic Linear 1 Variable e.g., 2a + 5
+                const aVal = randInt(-5, 5, false);
+                const coeff = randInt(2, 5);
+                const k = randInt(-8, 8, false);
+                const ans = coeff * aVal + k;
+
+                const condStr = `若 ${v('a')} = ${aVal}`;
+                const exprStr = `${coeff}${v('a')} ${k >= 0 ? '+ ' + k : '- ' + Math.abs(k)}`;
+
+                const distractors = [
+                    () => coeff * (-aVal) + k,
+                    () => coeff + aVal + k,
+                    () => -ans
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：將 ${v('a')} = ${fmtSigned(aVal, false)} 代入算式：`,
+                    `<span class="text-indigo-300">${coeff} × (${aVal}) ${k >= 0 ? '+ ' + k : '- ' + Math.abs(k)}</span>`,
+                    `步驟 2：先算乘法再算加減 ➔ <span class="text-yellow-300">${coeff * aVal} ${k >= 0 ? '+ ' + k : '- ' + Math.abs(k)} = ${ans}</span>`,
+                    `解答為：<span class="text-emerald-400 font-bold">${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 2) {
+                // Q2: Basic Linear 2 Variables e.g., 3x - 4y
+                const xVal = randInt(-4, 4, false);
+                const yVal = randInt(-4, 4, false);
+                const cX = randInt(2, 4);
+                const cY = randInt(-4, -2);
+                const ans = cX * xVal + cY * yVal;
+
+                const condStr = `若 ${v('x')} = ${xVal}, ${v('y')} = ${yVal}`;
+                const exprStr = `${cX}${v('x')} ${cY < 0 ? '- ' + Math.abs(cY) : '+ ' + cY}${v('y')}`;
+
+                const distractors = [
+                    () => cX * xVal - cY * yVal,
+                    () => cX * (-xVal) + cY * yVal,
+                    () => -ans
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：分別將 ${v('x')} = ${xVal}, ${v('y')} = ${yVal} 代入：`,
+                    `<span class="text-indigo-300">${cX}×(${xVal}) + (${cY})×(${yVal})</span>`,
+                    `步驟 2：計算乘積：<span class="text-yellow-300">${cX * xVal} + (${cY * yVal}) = ${ans}</span>`,
+                    `解答為：<span class="text-emerald-400 font-bold">${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 3) {
+                // Q3: Constant first or 3-term linear e.g., 5 - 2b or 10 - 3a + b
+                const bVal = randInt(-6, 6, false);
+                const k = randInt(5, 12);
+                const coeff = randInt(2, 4);
+                const ans = k - coeff * bVal;
+
+                const condStr = `當 ${v('b')} = ${bVal} 時`;
+                const exprStr = `${k} - ${coeff}${v('b')}`;
+
+                const distractors = [
+                    () => k + coeff * bVal,
+                    () => k - (coeff + bVal),
+                    () => -ans
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：代入 ${v('b')} = ${fmtSigned(bVal, false)}：`,
+                    `<span class="text-indigo-300">${k} - [${coeff} × (${bVal})]</span>`,
+                    `步驟 2：負負得正原則 ➔ <span class="text-yellow-300">${k} - (${coeff * bVal}) = ${ans}</span>`,
+                    `解答為：<span class="text-emerald-400 font-bold">${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 4) {
+                // Q4: Linear with Single Bracket e.g., 2(a - 3b)
+                const aVal = randInt(-5, 5, false);
+                const bVal = randInt(-4, 4, false);
+                const k = randInt(2, 4);
+                const inner = aVal - 3 * bVal;
+                const ans = k * inner;
+
+                const condStr = `若 ${v('a')} = ${aVal}, ${v('b')} = ${bVal}`;
+                const exprStr = `${k}(${v('a')} - 3${v('b')})`;
+
+                const distractors = [
+                    () => k * (aVal + 3 * bVal),
+                    () => k * aVal - 3 * bVal,
+                    () => -ans
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：先算括號內 ${v('a')} - 3${v('b')} 的值：`,
+                    `<span class="text-indigo-300">(${aVal}) - 3×(${bVal}) = ${aVal} - (${3 * bVal}) = ${inner}</span>`,
+                    `步驟 2：再乘以外層係數 ${k}：`,
+                    `<span class="text-yellow-300">${k} × (${inner}) = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 5) {
+                // Q5: Bracket with Front Negative e.g., -(4x - 5y)
+                const xVal = randInt(-4, 4, false);
+                const yVal = randInt(-4, 4, false);
+                const inner = 4 * xVal - 5 * yVal;
+                const ans = -inner;
+
+                const condStr = `若 ${v('x')} = ${xVal}, ${v('y')} = ${yVal}`;
+                const exprStr = `-(4${v('x')} - 5${v('y')})`;
+
+                const distractors = [
+                    () => inner,
+                    () => -(4 * xVal + 5 * yVal),
+                    () => -ans + 2
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：計算括號內 4${v('x')} - 5${v('y')}：`,
+                    `<span class="text-indigo-300">4×(${xVal}) - 5×(${yVal}) = ${4 * xVal} - (${5 * yVal}) = ${inner}</span>`,
+                    `步驟 2：注意最前面的負號變號：`,
+                    `<span class="text-yellow-300">-(${inner}) = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 6) {
+                // Q6: Bracket & Constant Combo e.g., 3a - 2(b - 1)
+                const aVal = randInt(-4, 4, false);
+                const bVal = randInt(-5, 5, false);
+                const ans = 3 * aVal - 2 * (bVal - 1);
+
+                const condStr = `若 ${v('a')} = ${aVal}, ${v('b')} = ${bVal}`;
+                const exprStr = `3${v('a')} - 2(${v('b')} - 1)`;
+
+                const distractors = [
+                    () => 3 * aVal - 2 * (bVal + 1),
+                    () => 3 * aVal - 2 * bVal - 1,
+                    () => -ans
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：算式展開或先算括號：<span class="text-indigo-300">${v('b')} - 1 = (${bVal}) - 1 = ${bVal - 1}</span>`,
+                    `步驟 2：代回計算：<span class="text-yellow-300">3×(${aVal}) - 2×(${bVal - 1}) = ${3 * aVal} - (${2 * (bVal - 1)}) = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 7) {
+                // Q7: Quadratic 1 Variable e.g., x² + 3x - 5
+                const xVal = randInt(-4, 4, false);
+                const xSq = xVal * xVal;
+                const ans = xSq + 3 * xVal - 5;
+
+                const condStr = `當 ${v('x')} = ${xVal} 時`;
+                const exprStr = `${v('x')}² + 3${v('x')} - 5`;
+
+                const distractors = [
+                    () => -xSq + 3 * xVal - 5,
+                    () => xSq - 3 * xVal - 5,
+                    () => -ans
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `⚠️ <span class="text-pink-400 font-bold">負數平方重點：</span> (${xVal})² = +${xSq}（負負得正）`,
+                    `代入算式：<span class="text-indigo-300">(${xVal})² + 3×(${xVal}) - 5</span>`,
+                    `計算結果：<span class="text-yellow-300">${xSq} + (${3 * xVal}) - 5 = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 8) {
+                // Q8: Coefficient Quadratic e.g., 2x² - 5x + 3
+                const xVal = randInt(-3, 3, false);
+                const xSq = xVal * xVal;
+                const ans = 2 * xSq - 5 * xVal + 3;
+
+                const condStr = `當 ${v('x')} = ${xVal} 時`;
+                const exprStr = `2${v('x')}² - 5${v('x')} + 3`;
+
+                const distractors = [
+                    () => 2 * (-xSq) - 5 * xVal + 3,
+                    () => 2 * xSq + 5 * xVal + 3,
+                    () => -ans
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：計算平方項：2 × (${xVal})² = 2 × ${xSq} = <span class="text-indigo-300">${2 * xSq}</span>`,
+                    `步驟 2：計算一次項：-5 × (${xVal}) = <span class="text-indigo-300">${-5 * xVal}</span>`,
+                    `步驟 3：總合：<span class="text-yellow-300">${2 * xSq} + (${-5 * xVal}) + 3 = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 9) {
+                // Q9: Front Negative Square Trap e.g., -x² + 4x
+                const xVal = randInt(-4, -1); // negative xVal
+                const xSq = xVal * xVal;
+                const ans = -xSq + 4 * xVal;
+
+                const condStr = `當 ${v('x')} = ${xVal} 時`;
+                const exprStr = `-${v('x')}² + 4${v('x')}`;
+
+                const distractors = [
+                    () => xSq + 4 * xVal, // square trap mistake
+                    () => -xSq - 4 * xVal,
+                    () => -ans
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `💥 <span class="text-amber-300 font-bold">超級 Trap：</span> -${v('x')}² 表示 -(${v('x')}²)，負號在平方外面！`,
+                    `計算 -${v('x')}²：-(${xVal})² = -(+${xSq}) = <span class="text-indigo-300">-${xSq}</span>`,
+                    `計算 4${v('x')}：4×(${xVal}) = <span class="text-indigo-300">${4 * xVal}</span>`,
+                    `最終結果：<span class="text-yellow-300">-${xSq} + (${4 * xVal}) = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 10) {
+                // Q10: Difference of Squares e.g., p² - q²
+                const pVal = randInt(-5, 5, false);
+                const qVal = randInt(-5, 5, false);
+                const pSq = pVal * pVal;
+                const qSq = qVal * qVal;
+                const ans = pSq - qSq;
+
+                const condStr = `當 ${v('p')} = ${pVal}, ${v('q')} = ${qVal} 時`;
+                const exprStr = `${v('p')}² - ${v('q')}²`;
+
+                const distractors = [
+                    () => pSq + qSq,
+                    () => -pSq - qSq,
+                    () => (pVal - qVal) * (pVal - qVal)
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：${v('p')}² = (${pVal})² = ${pSq}`,
+                    `步驟 2：${v('q')}² = (${qVal})² = ${qSq}`,
+                    `步驟 3：${v('p')}² - ${v('q')}² = <span class="text-yellow-300">${pSq} - ${qSq} = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 11) {
+                // Q11: Two Variable Degree 3 e.g., a²b + ab²
+                const aVal = randInt(-3, 3, false);
+                const bVal = randInt(-3, 3, false);
+                const term1 = (aVal * aVal) * bVal;
+                const term2 = aVal * (bVal * bVal);
+                const ans = term1 + term2;
+
+                const condStr = `若 ${v('a')} = ${aVal}, ${v('b')} = ${bVal}`;
+                const exprStr = `${v('a')}²${v('b')} + ${v('a')}${v('b')}²`;
+
+                const distractors = [
+                    () => term1 - term2,
+                    () => -term1 + term2,
+                    () => -ans
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：計算 ${v('a')}²${v('b')} = (${aVal})²×(${bVal}) = ${aVal * aVal}×(${bVal}) = <span class="text-indigo-300">${term1}</span>`,
+                    `步驟 2：計算 ${v('a')}${v('b')}² = (${aVal})×(${bVal})² = (${aVal})×${bVal * bVal} = <span class="text-indigo-300">${term2}</span>`,
+                    `步驟 3：相加 = <span class="text-yellow-300">${term1} + (${term2}) = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 12) {
+                // Q12: Product of Binomials e.g., (a + b)(a - b)
+                const aVal = randInt(-6, 6, false);
+                const bVal = randInt(-6, 6, false);
+                const sumVal = aVal + bVal;
+                const diffVal = aVal - bVal;
+                const ans = sumVal * diffVal;
+
+                const condStr = `若 ${v('a')} = ${aVal}, ${v('b')} = ${bVal}`;
+                const exprStr = `(${v('a')} + ${v('b')})(${v('a')} - ${v('b')})`;
+
+                const distractors = [
+                    () => sumVal + diffVal,
+                    () => -(sumVal * diffVal),
+                    () => (aVal * aVal) + (bVal * bVal)
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：計算第一個括號：(${v('a')} + ${v('b')}) = (${aVal}) + (${bVal}) = <span class="text-indigo-300">${sumVal}</span>`,
+                    `步驟 2：計算第二個括號：(${v('a')} - ${v('b')}) = (${aVal}) - (${bVal}) = <span class="text-indigo-300">${diffVal}</span>`,
+                    `步驟 3：括號相乘：<span class="text-yellow-300">(${sumVal})(${diffVal}) = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 13) {
+                // Q13: Algebraic Fraction with Linear Denominator e.g., (2a + 3b) / (c - 1)
+                let aVal = randInt(-4, 4, false);
+                let bVal = randInt(-4, 4, false);
+                let num = 2 * aVal + 3 * bVal;
+                if (num === 0) { bVal += 2; num = 2 * aVal + 3 * bVal; }
+                
+                // Choose denominator D that divides num cleanly
+                const D = (num % 2 === 0) ? -2 : -1;
+                const cVal = D + 1; // c - 1 = D
+                const ans = num / D;
+
+                const condStr = `若 ${v('a')} = ${aVal}, ${v('b')} = ${bVal}, ${v('c')} = ${cVal}`;
+                const exprStr = fmtFraction(`2${v('a')} + 3${v('b')}`, `${v('c')} - 1`);
+
+                const distractors = [
+                    () => -ans,
+                    () => ans + 2,
+                    () => ans - 3
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：計算分子：2×(${aVal}) + 3×(${bVal}) = <span class="text-indigo-300">${num}</span>`,
+                    `步驟 2：計算分母：${cVal} - 1 = <span class="text-indigo-300">${D}</span>`,
+                    `步驟 3：分子除以分母：<span class="text-yellow-300">${num} ÷ (${D}) = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else if (step === 14) {
+                // Q14: Difference of Squares over Sum e.g., (x² - y²) / (x + y)
+                let xVal = randInt(-5, 5, false);
+                let yVal = randInt(-5, 5, false);
+                if (xVal + yVal === 0) xVal += 2; // ensure non-zero denominator
+
+                const num = xVal * xVal - yVal * yVal;
+                const den = xVal + yVal;
+                const ans = xVal - yVal;
+
+                const condStr = `當 ${v('x')} = ${xVal}, ${v('y')} = ${yVal} 時`;
+                const exprStr = fmtFraction(`${v('x')}² - ${v('y')}²`, `${v('x')} + ${v('y')}`);
+
+                const distractors = [
+                    () => xVal + yVal,
+                    () => -ans,
+                    () => num + den
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `步驟 1：計算分子 (${v('x')}² - ${v('y')}²) = (${xVal})² - (${yVal})² = ${xVal * xVal} - ${yVal * yVal} = <span class="text-indigo-300">${num}</span>`,
+                    `步驟 2：計算分母 (${v('x')} + ${v('y')}) = ${xVal} + (${yVal}) = <span class="text-indigo-300">${den}</span>`,
+                    `步驟 3：相除結果：<span class="text-yellow-300">${num} ÷ (${den}) = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+            else {
+                // Q15: Complex Algebraic Fraction e.g., (a² + b²) / (a - b)
+                let aVal, bVal, num, den;
+                do {
+                    aVal = randInt(-6, 6, false);
+                    bVal = randInt(-6, 6, false);
+                    den = aVal - bVal;
+                    num = aVal * aVal + bVal * bVal;
+                } while (den === 0 || num % den !== 0);
+
+                const ans = num / den;
+
+                const condStr = `當 ${v('a')} = ${aVal}, ${v('b')} = ${bVal} 時`;
+                const exprStr = fmtFraction(`${v('a')}² + ${v('b')}²`, `${v('a')} - ${v('b')}`);
+
+                const distractors = [
+                    () => -ans,
+                    () => Math.round(num / (aVal + bVal)) || ans + 1,
+                    () => ans - 2
+                ];
+                const options = buildUniqueOptions(ans, distractors);
+                const exp = [
+                    `🎉 <span class="text-yellow-300 font-bold">第 15 題終極挑戰！</span>`,
+                    `分子：(${aVal})² + (${bVal})² = ${aVal * aVal} + ${bVal * bVal} = <span class="text-indigo-300">${num}</span>`,
+                    `分母：(${aVal}) - (${bVal}) = <span class="text-indigo-300">${den}</span>`,
+                    `代數分數值：<span class="text-emerald-400 font-bold">${num} ÷ (${den}) = ${ans}</span>`
+                ];
+                return { condition: condStr, expression: exprStr, answer: ans, options, explanation: exp.join('<br>') };
+            }
+        }
+
+        /* ==========================================================================
+           6. GAME STATE & CONTROLLER LOGIC
+           ========================================================================== */
+
+        let gameMode = 'campaign'; // 'campaign', 'p1', 'p2'
+        let currentPhase = 1;      // 1 or 2
+        let score = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let phase1CorrectCount = 0;
+        let phase2QuestionIndex = 0; // 1 to 15
+        const PHASE1_TARGET = 10;   // 10 questions for Phase 1
+        const PHASE2_TARGET = 15;   // 15 questions for Phase 2
+        let questionCount = 0;
+        let totalCorrect = 0;
+        let currentProblem = null;
+        let isAnswered = false;
+
+        // Timer
+        let startTime = 0;
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+
+        function showStartScreen() {
+            clearInterval(timerInterval);
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('stage-modal').classList.add('hidden');
+        }
+
+        function startGame(mode) {
+            playSound('click');
+            gameMode = mode;
+            score = 0;
+            combo = 0;
+            maxCombo = 0;
+            phase1CorrectCount = 0;
+            phase2QuestionIndex = 0;
+            questionCount = 0;
+            totalCorrect = 0;
+            elapsedSeconds = 0;
+
+            if (mode === 'p2') {
+                currentPhase = 2;
+                phase2QuestionIndex = 1;
+            } else {
+                currentPhase = 1;
+            }
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('combo-val').innerText = '0x';
+
+            const badge = document.getElementById('mode-badge');
+            if (mode === 'campaign') badge.innerText = '完整闖關';
+            else if (mode === 'p1') badge.innerText = '階段一專練';
+            else badge.innerText = '階段二專練';
+
+            startTime = Date.now();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+                const mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+                const secs = String(elapsedSeconds % 60).padStart(2, '0');
+                document.getElementById('timer-display').innerText = `⏱️ ${mins}:${secs}`;
+            }, 1000);
+
+            updatePhaseUI();
+            loadNextQuestion();
+        }
+
+        function updatePhaseUI() {
+            const stageBadge = document.getElementById('stage-badge');
+            const stageTitle = document.getElementById('stage-title');
+            const progressContainer = document.getElementById('progress-container');
+            const progressText = document.getElementById('progress-text');
+            const progressBar = document.getElementById('progress-bar');
+
+            progressContainer.classList.remove('hidden');
+
+            if (currentPhase === 1) {
+                stageBadge.innerText = '階段 1/2';
+                stageBadge.className = 'px-3 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/40';
+                stageTitle.innerText = '有向數四則運算 (10題)';
+
+                const currentProg = (gameMode === 'campaign') ? phase1CorrectCount : questionCount;
+                progressText.innerText = `${currentProg} / ${PHASE1_TARGET}`;
+                progressBar.style.width = `${Math.min(100, (currentProg / PHASE1_TARGET) * 100)}%`;
+            } else {
+                stageBadge.innerText = '階段 2/2';
+                stageBadge.className = 'px-3 py-1 rounded-lg bg-pink-500/20 text-pink-300 text-xs font-bold border border-pink-500/40';
+                stageTitle.innerText = '代數式代入求值 (15題)';
+
+                const currentProg = (gameMode === 'campaign') ? phase2QuestionIndex : questionCount;
+                progressText.innerText = `${currentProg} / ${PHASE2_TARGET}`;
+                progressBar.style.width = `${Math.min(100, (currentProg / PHASE2_TARGET) * 100)}%`;
+            }
+        }
+
+        function loadNextQuestion() {
+            isAnswered = false;
+            questionCount++;
+
+            document.getElementById('question-number').innerText = `QUESTION #${questionCount}`;
+            document.getElementById('explanation-box').classList.add('hidden');
+
+            if (currentPhase === 1) {
+                currentProblem = generatePhase1Problem();
+            } else {
+                // Determine step level (1 to 15)
+                let step = (gameMode === 'campaign') ? phase2QuestionIndex : questionCount;
+                if (step < 1) step = 1;
+                if (step > 15) step = 15;
+                currentProblem = generatePhase2Problem(step);
+            }
+
+            const condElem = document.getElementById('question-condition');
+            if (currentProblem.condition) {
+                condElem.innerHTML = currentProblem.condition;
+                condElem.classList.remove('hidden');
+                document.getElementById('expression-label').innerText = '求代數式的值：';
+            } else {
+                condElem.classList.add('hidden');
+                document.getElementById('expression-label').innerText = '計算下列算式的值：';
+            }
+
+            document.getElementById('question-math').innerHTML = currentProblem.expression;
+
+            const optionsGrid = document.getElementById('options-grid');
+            optionsGrid.innerHTML = '';
+
+            const optionLabels = ['A', 'B', 'C', 'D'];
+            currentProblem.options.forEach((optVal, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn p-4 rounded-2xl glass-panel hover:bg-slate-700/80 transition-all text-left flex items-center justify-between border border-slate-700 font-math text-lg font-bold group transform hover:-translate-y-0.5 active:scale-98 cursor-pointer`;
+                btn.onclick = () => checkAnswer(optVal, btn);
+
+                btn.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-xl bg-slate-800 text-indigo-300 text-xs font-black flex items-center justify-center border border-slate-600 group-hover:border-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                            ${optionLabels[idx]}
+                        </span>
+                        <span class="text-white text-xl">${optVal}</span>
+                    </div>
+                `;
+                optionsGrid.appendChild(btn);
+            });
+
+            updatePhaseUI();
+        }
+
+        function checkAnswer(selectedVal, clickedBtn) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const isCorrect = (selectedVal === currentProblem.answer);
+            const allOptionBtns = document.querySelectorAll('.option-btn');
+
+            allOptionBtns.forEach(btn => btn.style.pointerEvents = 'none');
+
+            const statusElem = document.getElementById('result-status');
+            const cardElem = document.getElementById('question-card');
+
+            if (isCorrect) {
+                playSound('correct');
+                combo++;
+                totalCorrect++;
+                if (combo > maxCombo) maxCombo = combo;
+
+                if (currentPhase === 1) {
+                    phase1CorrectCount++;
+                }
+
+                const addedScore = 100 + (combo * 20);
+                score += addedScore;
+                document.getElementById('score-val').innerText = score;
+                document.getElementById('combo-val').innerText = `${combo}x`;
+
+                clickedBtn.classList.remove('glass-panel', 'border-slate-700');
+                clickedBtn.classList.add('bg-emerald-600/30', 'border-emerald-500', 'text-emerald-200');
+
+                statusElem.innerHTML = `<span class="text-emerald-400 font-bold flex items-center gap-1">✨ 答對了！ (+${addedScore})</span>`;
+
+            } else {
+                playSound('wrong');
+                combo = 0;
+                document.getElementById('combo-val').innerText = '0x';
+
+                cardElem.classList.add('animate-shake');
+                setTimeout(() => cardElem.classList.remove('animate-shake'), 500);
+
+                clickedBtn.classList.remove('glass-panel', 'border-slate-700');
+                clickedBtn.classList.add('bg-rose-600/30', 'border-rose-500', 'text-rose-200');
+
+                allOptionBtns.forEach(btn => {
+                    if (btn.innerText.includes(String(currentProblem.answer))) {
+                        btn.classList.add('bg-emerald-600/20', 'border-emerald-500/60');
+                    }
+                });
+
+                statusElem.innerHTML = `<span class="text-rose-400 font-bold">❌ 答錯囉！注意正負號陷阱</span>`;
+            }
+
+            document.getElementById('explanation-content').innerHTML = currentProblem.explanation;
+            document.getElementById('explanation-box').classList.remove('hidden');
+            updatePhaseUI();
+        }
+
+        function nextQuestion() {
+            playSound('click');
+
+            // 1. Campaign Mode: Transition Phase 1 -> Phase 2
+            if (gameMode === 'campaign' && currentPhase === 1 && phase1CorrectCount >= PHASE1_TARGET) {
+                playSound('levelup');
+                document.getElementById('stage-modal').classList.remove('hidden');
+                return;
+            }
+
+            // 2. Practice Mode Phase 1 end check
+            if (gameMode === 'p1' && questionCount >= PHASE1_TARGET) {
+                endGame();
+                return;
+            }
+
+            // 3. Campaign Mode Phase 2 increment and end check
+            if (gameMode === 'campaign' && currentPhase === 2) {
+                phase2QuestionIndex++;
+                if (phase2QuestionIndex > PHASE2_TARGET) {
+                    endGame();
+                    return;
+                }
+            }
+
+            // 4. Practice Mode Phase 2 end check
+            if (gameMode === 'p2' && questionCount >= PHASE2_TARGET) {
+                endGame();
+                return;
+            }
+
+            loadNextQuestion();
+        }
+
+        function startPhase2() {
+            playSound('click');
+            currentPhase = 2;
+            phase2QuestionIndex = 1;
+            document.getElementById('stage-modal').classList.add('hidden');
+            updatePhaseUI();
+            loadNextQuestion();
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            playSound('levelup');
+
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            const totalPlayed = questionCount;
+            const accuracy = Math.round((totalCorrect / totalPlayed) * 100) || 0;
+
+            document.getElementById('res-score').innerText = score;
+            document.getElementById('res-accuracy').innerText = `${accuracy}%`;
+            document.getElementById('res-maxcombo').innerText = `${maxCombo}x`;
+            document.getElementById('res-time').innerText = `${elapsedSeconds}s`;
+
+            let stars = '⭐';
+            let title = '代數新秀';
+
+            if (accuracy >= 90) {
+                stars = '⭐⭐⭐';
+                title = '代數傳奇大師 👑';
+            } else if (accuracy >= 70) {
+                stars = '⭐⭐';
+                title = '正負號解題高手 🎯';
+            } else if (accuracy >= 50) {
+                stars = '⭐';
+                title = '數學運算者 ✏️';
+            }
+
+            document.getElementById('result-stars').innerText = stars;
+            document.getElementById('res-rank-title').innerText = title;
+        }
+    </script>
+</body>
+</html>
